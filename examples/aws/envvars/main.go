@@ -10,11 +10,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/hashicorp/go-multierror"
 
-	token "github.com/aporeto-se/prisma-sdk-go-v2/token/aws"
+	prisma_api "github.com/aporeto-se/prisma-sdk-go-v2/api"
+	token "github.com/aporeto-se/prisma-sdk-go-v2/token/aws/envvars"
 )
 
 const (
@@ -54,10 +56,6 @@ func main() {
 		errors = multierror.Append(errors, fmt.Errorf("env var %s is required", APIEnv))
 	}
 
-	if namespace == "" {
-		errors = multierror.Append(errors, fmt.Errorf("env var %s is required", NamespaceEnv))
-	}
-
 	if accessKeyID == "" {
 		errors = multierror.Append(errors, fmt.Errorf("env var %s is required", AccessKeyIDEnv))
 	}
@@ -75,12 +73,36 @@ func main() {
 		panic(err)
 	}
 
-	prismaClient, err := token.NewConfig().
+	httpClient := &http.Client{}
+
+	tokenprovider, err := token.NewConfig().
 		SetAPI(api).
-		SetNamespace(namespace).
 		SetAccessKeyID(accessKeyID).
 		SetSecretAccessKey(secretAccessKey).
-		SetSessionToken(sessionToken).PrismaClient(ctx)
+		SetSessionToken(sessionToken).Build()
+	if err != nil {
+		panic(err)
+	}
+
+	token, err := tokenprovider.Token(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(token)
+
+	if namespace == "" {
+		fmt.Println(fmt.Sprintf("env var %s is NOT set", NamespaceEnv))
+		return
+	}
+
+	fmt.Println(fmt.Sprintf("env var %s IS set", NamespaceEnv))
+
+	prismaClient, err := prisma_api.NewConfig().
+		SetNamespace(namespace).
+		SetAPI(api).
+		SetTokenProvider(tokenprovider).
+		SetHTTPClient(httpClient).Build(ctx)
 
 	if err != nil {
 		panic(err)

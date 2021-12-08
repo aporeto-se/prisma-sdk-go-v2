@@ -9,7 +9,6 @@ import (
 // Config config
 type Config struct {
 	API             string
-	Namespace       string
 	AccessKeyID     string
 	SecretAccessKey string
 	SessionToken    string
@@ -24,12 +23,6 @@ func NewConfig() *Config {
 // SetAPI sets attribute and returns self
 func (t *Config) SetAPI(api string) *Config {
 	t.API = api
-	return t
-}
-
-// SetNamespace sets attribute and returns self
-func (t *Config) SetNamespace(namespace string) *Config {
-	t.Namespace = namespace
 	return t
 }
 
@@ -74,17 +67,3 @@ func (t *Config) GetHTTPClient() *http.Client {
 func (t *Config) Build() (*Client, error) {
 	return NewClient(t)
 }
-
-// // PrismaClient returns PrismaClient directly
-// func (t *Config) PrismaClient(ctx context.Context) (*prisma_api.Client, error) {
-
-// 	tokenprovider, err := NewClient(t)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return prisma_api.NewConfig().
-// 		SetNamespace(t.Namespace).
-// 		SetTokenProvider(tokenprovider).
-// 		SetHTTPClient(t.GetHTTPClient()).Build(ctx)
-// }
