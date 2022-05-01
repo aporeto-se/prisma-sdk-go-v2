@@ -1,5 +1,7 @@
 # prisma-sdk-v2
 
+Example
+
 ```golang
 	egressRule := prisma_types.NewRule().WithTrafficActionAllow().AddTCPProtocolPort(53).AddUDPProtocolPort(53).
 		AddObject("@org:cloudaccount=prisma-microseg-field-azure", "@org:group=prisma-aks-microseg", "@org:tenant=806775361903163392", "externalnetwork:name=Kube DNS")
